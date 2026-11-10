@@ -29,5 +29,6 @@ npm-debug.log*
 # ---- data / outputs（评测产物不入库）----
 data/
 outputs/
+.agent/
 *.mp4
 !demo.mp4

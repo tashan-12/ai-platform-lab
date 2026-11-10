@@ -74,14 +74,23 @@ cd ai-platform-lab
 cd mcp-server
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-python -m unittest discover -s tests -v          # 28 个用例，零依赖可跑
+python -m unittest discover -s tests -v          # 38 个用例，零依赖可跑
 LAB_WORKSPACE_ROOT=$PWD/.. python -m ai_lab_mcp.server
+
+# 模块二：LangGraph 闭环 Agent（已可用）
+cd ../graph-agent
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ../mcp-server -e ".[dev]"
+python -m unittest discover -s tests -v          # 16 个用例
+LAB_WORKSPACE_ROOT=$PWD/examples/sample_repo \
+  python -m ai_lab_agent.cli app.py utils.py    # 7 条发现，全部复核为 confirmed
 ```
 
 ## Roadmap
 
-- [x] `mcp-server`：3 个工具的 MCP Server，可接入 Claude Desktop / Cursor（28 个单测全绿）
-- [ ] `graph-agent`：LangGraph 三节点图，含条件边与回退
+- [x] `mcp-server`：3 个工具的 MCP Server，可接入 Claude Desktop / Cursor（38 个单测全绿）
+- [x] `graph-agent`：LangGraph 三节点图 + 两条条件边，每条发现自动生成复核脚本（16 个单测，靶场 7/7 证实）
+- [ ] `graph-agent` 接入 LLM 分析通道（规则兜底 + 模型增强）
 - [ ] `rag`：切分 + embedding + 向量检索 + rerank
 - [ ] `eval`：20 条评测集 + 离线跑分脚本
 - [x] `docs/adr`：3 份决策记录
