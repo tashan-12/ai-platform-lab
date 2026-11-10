@@ -66,20 +66,25 @@
 
 ## 快速开始
 
-> 🚧 随各模块落地补充。当前只有目录骨架。
-
 ```bash
-git clone git@github.com:<你的账号>/ai-platform-lab.git
+git clone git@github.com:tashan-12/ai-platform-lab.git
 cd ai-platform-lab
+
+# 模块一：MCP 工具层（已可用）
+cd mcp-server
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+python -m unittest discover -s tests -v          # 28 个用例，零依赖可跑
+LAB_WORKSPACE_ROOT=$PWD/.. python -m ai_lab_mcp.server
 ```
 
 ## Roadmap
 
-- [ ] `mcp-server`：3 个工具的 MCP Server，可接入 Claude Desktop / Cursor
+- [x] `mcp-server`：3 个工具的 MCP Server，可接入 Claude Desktop / Cursor（28 个单测全绿）
 - [ ] `graph-agent`：LangGraph 三节点图，含条件边与回退
 - [ ] `rag`：切分 + embedding + 向量检索 + rerank
 - [ ] `eval`：20 条评测集 + 离线跑分脚本
-- [ ] `docs/adr`：3 份决策记录
+- [x] `docs/adr`：3 份决策记录
 - [ ] `demo.mp4`：3 分钟录屏
 
 ## License
