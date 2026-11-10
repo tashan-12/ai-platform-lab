@@ -1,12 +1,10 @@
-"""MCP 服务入口：把三个工具暴露给 Claude Desktop / Cursor / 任意 MCP 客户端。
+"""MCP 服务入口：把 registry 里的工具暴露给 Claude Desktop / Cursor / 任意 MCP 客户端。
 
-只做协议接线与错误包装，业务逻辑都在 files / runner / issues 三个模块里，
-这样它们可以在没有 mcp 依赖的情况下被单元测试。
+这一层只做协议接线：工具的名字、描述、参数、错误包装都在 registry.py 里，
+所以同一份定义可以被 MCP（这里）和进程内调用（graph-agent）共用。
 """
 
 from __future__ import annotations
-
-import json
 
 try:  # mcp 2.x：FastMCP 改名为 MCPServer（from mcp.server import MCPServer）
     from mcp.server import MCPServer as _Server
@@ -14,21 +12,11 @@ except ImportError:  # mcp 1.x 兼容
     from mcp.server.fastmcp import FastMCP as _Server
 
 from .config import load_settings
-from .files import read_text_file as _read_text_file
-from .issues import search_issues as _search_issues
-from .runner import run_test as _run_test
+from .registry import build_registry
 
 settings = load_settings()
+registry = build_registry(settings)
 mcp = _Server("ai-platform-lab")
-
-
-def _error(exc: Exception) -> str:
-    """把异常转成结构化错误返回给模型，而不是让整个会话崩掉。"""
-
-    return json.dumps(
-        {"ok": False, "error": type(exc).__name__, "message": str(exc)},
-        ensure_ascii=False,
-    )
 
 
 @mcp.tool()
@@ -40,11 +28,7 @@ def read_file(path: str, max_bytes: int | None = None) -> str:
         max_bytes: 最多读取的字节数，默认 1000000（1MB）。
     """
 
-    try:
-        result = _read_text_file(settings, path, max_bytes=max_bytes)
-    except Exception as exc:  # noqa: BLE001 - 统一转成结构化错误
-        return _error(exc)
-    return json.dumps({"ok": True, **result}, ensure_ascii=False, indent=2)
+    return registry.call_json("read_file", path=path, max_bytes=max_bytes)
 
 
 @mcp.tool()
@@ -59,11 +43,7 @@ def run_test(command: str, cwd: str = ".") -> str:
         cwd: 相对工作区的工作目录，默认 "."。
     """
 
-    try:
-        result = _run_test(settings, command, cwd)
-    except Exception as exc:  # noqa: BLE001
-        return _error(exc)
-    return json.dumps({"ok": True, **result.to_dict()}, ensure_ascii=False, indent=2)
+    return registry.call_json("run_test", command=command, cwd=cwd)
 
 
 @mcp.tool()
@@ -75,11 +55,7 @@ def search_issues(query: str, limit: int = 5) -> str:
         limit: 最多返回几条，默认 5。
     """
 
-    try:
-        results = _search_issues(settings, query, limit)
-    except Exception as exc:  # noqa: BLE001
-        return _error(exc)
-    return json.dumps({"ok": True, "query": query, "results": results}, ensure_ascii=False, indent=2)
+    return registry.call_json("search_issues", query=query, limit=limit)
 
 
 def main() -> None:

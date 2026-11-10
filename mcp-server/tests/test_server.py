@@ -18,6 +18,21 @@ class ServerWiringTest(unittest.TestCase):
         names = sorted(tool.name for tool in server.mcp._tool_manager.list_tools())
         self.assertEqual(names, ["read_file", "run_test", "search_issues"])
 
+    def test_mcp_signature_matches_registry(self) -> None:
+        """防止 server.py 的 MCP 签名和 registry 的工具定义漂移。"""
+
+        import inspect
+
+        from ai_lab_mcp import server
+
+        for spec in server.registry.specs():
+            func = getattr(server, spec.name)
+            self.assertEqual(
+                list(inspect.signature(func).parameters),
+                [param.name for param in spec.params],
+                msg=f"{spec.name} 的 MCP 签名与 registry 定义不一致",
+            )
+
     def test_tool_errors_are_structured(self) -> None:
         from ai_lab_mcp import server
 

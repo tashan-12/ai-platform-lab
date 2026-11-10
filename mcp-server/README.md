@@ -38,6 +38,36 @@
 
 > 这四条都有对应的单元测试，改代码后跑一遍就知道有没有漏。
 
+## 进程内调用（给 graph-agent 用）
+
+工具定义收敛在 `registry.py`，所以除了 MCP，也能在**同一个进程里直接调**，不用起子进程、不走 stdio：
+
+```python
+from ai_lab_mcp.config import load_settings
+from ai_lab_mcp.registry import build_registry
+
+registry = build_registry(load_settings())
+
+registry.names()                                  # ['read_file', 'run_test', 'search_issues']
+registry.call("run_test", command="pytest -q")    # {'ok': True, 'exit_code': 0, ...}
+registry.call("read_file", path="README.md")      # {'ok': True, 'content': '...', ...}
+registry.call("read_file", path="../x")           # {'ok': False, 'error': 'PathEscapeError', ...}
+
+# 直接喂给 LLM 的函数调用
+tools = registry.openai_tools()
+```
+
+三个入口共用同一份定义，不存在"改了 MCP 忘了改 Agent"的问题：
+
+```text
+        registry.py（唯一定义源）
+         │            │            │
+     server.py     graph-agent    （未来）HTTP
+      MCP stdio    进程内调用       适配器
+```
+
+有一条测试专门盯着这件事：`test_mcp_signature_matches_registry` —— 一旦 `server.py` 的函数签名和 registry 的参数对不上，测试立刻红。
+
 ## 安装
 
 需要 Python 3.11+。
@@ -118,13 +148,15 @@ LAB_WORKSPACE_ROOT=/path/to/your/repo python -m ai_lab_mcp.server
 python -m unittest discover -s tests -v
 ```
 
-当前 28 个用例，覆盖：路径越界（含符号链接）、敏感文件、命令白名单、超时、输出截断、检索排序。
+当前 38 个用例，覆盖：路径越界（含符号链接）、敏感文件、命令白名单、超时、输出截断、检索排序、注册表调度与签名一致性。
 
 ```text
 tests/test_security.py   9 个   路径/符号链接/禁用规则/白名单
 tests/test_files.py      6 个   正常读/截断/目录/缺失/密钥/越界
 tests/test_runner.py     5 个   正常执行/非零退出/拒命令/超时/越界 cwd
 tests/test_issues.py     5 个   加载/命中排序/limit/无结果/文件缺失
+tests/test_registry.py   8 个   名称/调度/未知工具/结构化错误/JSON/LLM schema
+tests/test_server.py     3 个   MCP 三工具注册/签名一致性/错误结构（未装 mcp 时自动跳过）
 ```
 
 ## 一个刻意的设计取舍
