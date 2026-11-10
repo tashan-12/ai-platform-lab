@@ -1,0 +1,33 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+
+# ---- Node ----
+node_modules/
+npm-debug.log*
+
+# ---- env / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# ---- data / outputs（评测产物不入库）----
+data/
+outputs/
+*.mp4
+!demo.mp4
