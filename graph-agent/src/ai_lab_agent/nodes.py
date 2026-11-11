@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -108,6 +109,50 @@ def verify_node(state: dict, settings: Settings, registry: ToolRegistry) -> dict
     return {"verified": verified, "errors": errors, "attempts": attempts, "status": "verified"}
 
 
+def retrieve_node(state: dict, settings: Settings, registry: ToolRegistry) -> dict:
+    """按发现标题检索文档依据。
+
+    检索模块是可选依赖：没装 ai-lab-rag 或没有索引文件时安静跳过，
+    不让"没装依赖"变成整条流程的失败。
+    """
+
+    errors = list(state.get("errors") or [])
+
+    try:
+        from ai_lab_rag.index import Index
+        from ai_lab_rag.retriever import Retriever
+    except ImportError:
+        errors.append("检索模块未安装（ai-lab-rag），跳过文档依据")
+        return {"references": [], "errors": errors, "status": "retrieved"}
+
+    index_path = Path(os.environ.get("LAB_RAG_INDEX") or (settings.workspace_root / "rag-index.json"))
+    if not index_path.exists():
+        return {"references": [], "errors": errors, "status": "retrieved"}
+
+    parts = [str(state.get("goal") or "")]
+    for finding in (state.get("findings") or [])[:3]:
+        parts.append(str(finding.get("title") or ""))
+    query = " ".join(part for part in parts if part).strip()
+    if not query:
+        return {"references": [], "errors": errors, "status": "retrieved"}
+
+    try:
+        hits = Retriever(Index.load(index_path)).search(query, k=3)
+    except Exception as exc:  # noqa: BLE001 - 索引损坏不应中断主流程
+        errors.append(f"检索失败：{type(exc).__name__}: {exc}")
+        return {"references": [], "errors": errors, "status": "retrieved"}
+
+    references = [
+        {
+            "doc": hit.chunk.doc,
+            "heading": " / ".join(part for part in hit.chunk.heading_path if part),
+            "score": round(hit.score, 3),
+        }
+        for hit in hits
+    ]
+    return {"references": references, "errors": errors, "status": "retrieved"}
+
+
 def report_node(state: dict, settings: Settings, registry: ToolRegistry) -> dict:
     """把发现与验证结果合成为 markdown 报告。"""
 
@@ -157,6 +202,14 @@ def report_node(state: dict, settings: Settings, registry: ToolRegistry) -> dict
     if not findings:
         lines += ["没有命中任何规则。", ""]
 
+    references = list(state.get("references") or [])
+    if references:
+        lines += ["## 相关文档依据", ""]
+        for reference in references:
+            heading = reference.get("heading") or "(无标题)"
+            lines.append(f"- {reference.get('doc')} · {heading}（相关度 {reference.get('score')}）")
+        lines.append("")
+
     lines += [
         "---",
         "",
@@ -181,7 +234,7 @@ def route_after_verify(state: dict) -> str:
     max_attempts = int(state.get("max_attempts") or 2)
     if has_error and attempts < max_attempts:
         return "verify"
-    return "report"
+    return "retrieve"
 
 
 def build_nodes(settings: Settings, registry: ToolRegistry) -> dict:
@@ -190,5 +243,6 @@ def build_nodes(settings: Settings, registry: ToolRegistry) -> dict:
     return {
         "analyze": lambda state: analyze_node(state, settings, registry),
         "verify": lambda state: verify_node(state, settings, registry),
+        "retrieve": lambda state: retrieve_node(state, settings, registry),
         "report": lambda state: report_node(state, settings, registry),
     }

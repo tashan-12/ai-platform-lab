@@ -50,6 +50,11 @@ class GraphTest(unittest.TestCase):
         self.assertNotIn("verified", final)
         self.assertIn("没有命中任何规则", final["report"])
 
+    def test_retrieve_is_noop_without_index(self) -> None:
+        final = self._run(["bad.py"])
+        # 工作区里没有 rag-index.json，检索环节应安静返回空列表
+        self.assertEqual(final.get("references"), [])
+
     def test_missing_file_still_produces_report(self) -> None:
         final = self._run(["nope.py"])
         self.assertEqual(final["status"], "done")

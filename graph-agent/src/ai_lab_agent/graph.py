@@ -19,6 +19,7 @@ def build_graph(settings: Settings, registry: ToolRegistry | None = None):
     graph = StateGraph(AgentState)
     graph.add_node("analyze", nodes["analyze"])
     graph.add_node("verify", nodes["verify"])
+    graph.add_node("retrieve", nodes["retrieve"])
     graph.add_node("report", nodes["report"])
 
     graph.add_edge(START, "analyze")
@@ -30,8 +31,9 @@ def build_graph(settings: Settings, registry: ToolRegistry | None = None):
     graph.add_conditional_edges(
         "verify",
         route_after_verify,
-        {"verify": "verify", "report": "report"},
+        {"verify": "verify", "retrieve": "retrieve"},
     )
+    graph.add_edge("retrieve", "report")
     graph.add_edge("report", END)
 
     return graph.compile()

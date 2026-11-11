@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-lab-rag"
+version = "0.1.0"
+description = "面向真实工程语料的检索：结构感知切分 + 增量索引 + BM25/向量混合 + 重排"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ai-lab-rag = "ai_lab_rag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

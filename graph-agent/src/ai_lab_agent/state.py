@@ -35,6 +35,7 @@ class AgentState(TypedDict, total=False):
     targets: list[str]
     findings: list[Finding]
     verified: list[Verification]
+    references: list[dict]
     attempts: int
     max_attempts: int
     report: str
