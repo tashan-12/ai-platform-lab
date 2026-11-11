@@ -30,5 +30,6 @@ npm-debug.log*
 data/
 outputs/
 .agent/
+rag-index.json
 *.mp4
 !demo.mp4
