@@ -34,13 +34,19 @@
 
 ## 跑出来的结果
 
-> 🚧 建设中。评测数据在 `docs/eval-report.md`，完成后回填下表。
+**检索侧**（20 条真实问题，5 类，语料为本仓库 12 篇文档 / 84 个块）：
 
-| 指标 | baseline（不用 RAG / 不验证） | 本方案 | 说明 |
-|---|---|---|---|
-| 定位准确率 | TODO | TODO | 20 条评测集 |
-| 平均耗时 | TODO | TODO | 单次任务 |
-| 人工复核率 | TODO | TODO | 需要人工介入的比例 |
+| 配置 | Recall@1 | Recall@3 | Recall@5 | MRR | P50 |
+|---|---|---|---|---|---|
+| BM25 基线 | **85%** | 90% | 95% | **0.892** | 1.7 ms |
+| 纯向量 | 75% | 85% | 100% | 0.838 | 1.8 ms |
+| 混合 | 80% | 95% | 100% | 0.879 | 1.7 ms |
+| **混合 + 重排** | 80% | **100%** | 100% | 0.883 | 1.8 ms |
+
+> 诚实结论：重排把 Recall@3 拉到 100%（+10pp），但 Recall@1 掉了 5pp、MRR 略低于纯 BM25。
+> 取前 3 段做上下文 → 用混合+重排；只要一条精确答案 → 用 BM25。完整分析见 [评测报告](docs/eval-report.md)。
+
+**Agent 侧**（靶场 7 条问题）：7 条全部经脚本复核为 confirmed，0 误报；单次全流程约 1 秒（不含模型调用）。
 
 ## 关键设计
 
@@ -50,6 +56,7 @@
 - [ADR-002](docs/adr/0002-graph-orchestration.md) 用图编排（LangGraph），而不是线性链
 - [ADR-003](docs/adr/0003-sandbox-execution.md) 执行放沙箱，而不是同集群容器
 - [ADR-004](docs/adr/0004-inprocess-vs-mcp.md) 工具通道：进程内调用与 MCP 并存
+- [ADR-005](docs/adr/0005-rag-design.md) 检索：结构切分 + 混合打分 + 零依赖向量
 
 ## 目录
 
@@ -92,8 +99,8 @@ LAB_WORKSPACE_ROOT=$PWD/examples/sample_repo \
 - [x] `mcp-server`：3 个工具的 MCP Server，可接入 Claude Desktop / Cursor（38 个单测全绿）
 - [x] `graph-agent`：LangGraph 三节点图 + 两条条件边，每条发现自动生成复核脚本（16 个单测，靶场 7/7 证实）
 - [ ] `graph-agent` 接入 LLM 分析通道（规则兜底 + 模型增强）
-- [ ] `rag`：切分 + embedding + 向量检索 + rerank
-- [ ] `eval`：20 条评测集 + 离线跑分脚本
+- [x] `rag`：结构切分 + 增量索引 + BM25/向量混合 + 重排（27 个单测）
+- [x] `eval`：20 条真实评测集 + 离线跑分（Recall@3 90% → 100%）
 - [x] `docs/adr`：3 份决策记录
 - [ ] `demo.mp4`：3 分钟录屏
 

@@ -1,0 +1,20 @@
+{"id":"Q01","category":"概念","query":"为什么工具要同时支持进程内调用和 MCP 协议","expected":["docs/adr/0004-inprocess-vs-mcp.md"],"note":"ADR-004 的核心论点"}
+{"id":"Q02","category":"概念","query":"为什么用图编排而不是线性链","expected":["docs/adr/0002-graph-orchestration.md"],"note":"需要回退与中断"}
+{"id":"Q03","category":"概念","query":"执行不受信任的代码应该放在沙箱还是本地子进程","expected":["docs/adr/0003-sandbox-execution.md"],"note":"当前实现是受限子进程"}
+{"id":"Q04","category":"概念","query":"工具为什么要通过协议暴露而不是硬编码函数调用","expected":["docs/adr/0001-tools-via-mcp.md"],"note":"定义与使用分离"}
+{"id":"Q05","category":"概念","query":"哈希向量是不是语义向量，有什么局限","expected":["rag/README.md"],"note":"诚实边界说明"}
+{"id":"Q06","category":"用法","query":"怎么给语料建检索索引","expected":["rag/README.md"],"note":"index 子命令"}
+{"id":"Q07","category":"用法","query":"怎么把 MCP 服务接入 Claude Desktop","expected":["mcp-server/README.md"],"note":"claude_desktop_config.json"}
+{"id":"Q08","category":"用法","query":"怎么跑一遍示例靶场看报告","expected":["graph-agent/README.md","graph-agent/examples/sample_repo/README.md"],"note":"两处都写了"}
+{"id":"Q09","category":"用法","query":"怎么调整 BM25 和向量的权重","expected":["rag/README.md"],"note":"hybrid_alpha"}
+{"id":"Q10","category":"事实","query":"read_file 工具读取文件有哪些限制","expected":["mcp-server/README.md"],"note":"路径/大小/密钥"}
+{"id":"Q11","category":"事实","query":"run_test 允许执行哪些命令","expected":["mcp-server/README.md"],"note":"白名单 7 类"}
+{"id":"Q12","category":"事实","query":"analyze verify report 三个节点分别做什么","expected":["graph-agent/README.md"],"note":"节点职责表"}
+{"id":"Q13","category":"事实","query":"这个仓库有哪些模块","expected":["README.md"],"note":"目录结构"}
+{"id":"Q14","category":"事实","query":"一共多少个测试用例","expected":["README.md","mcp-server/README.md"],"note":"README 写了 38+17+27"}
+{"id":"Q15","category":"边界","query":"代码块在切分时会被切断吗","expected":["rag/README.md"],"note":"围栏整块保留"}
+{"id":"Q16","category":"边界","query":"增量索引怎么判断文件有没有变化","expected":["rag/README.md"],"note":"SHA-1"}
+{"id":"Q17","category":"边界","query":"没有安装检索模块时 agent 会怎样","expected":["graph-agent/README.md","PLAN.md"],"note":"安静跳过"}
+{"id":"Q18","category":"排错","query":"沙箱实例泄漏没有被回收怎么办","expected":["config/issues.json"],"note":"ISSUE-103"}
+{"id":"Q19","category":"排错","query":"批量导入 486 条明细耗时超过两秒","expected":["config/issues.json"],"note":"ISSUE-101"}
+{"id":"Q20","category":"排错","query":"AI 网关配额计数在 Redis 出现热点","expected":["config/issues.json"],"note":"ISSUE-104"}

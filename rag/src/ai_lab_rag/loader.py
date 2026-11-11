@@ -32,9 +32,15 @@ def load_corpus(corpus: Path, cfg: RagConfig) -> tuple[list[Document], list[str]
     docs: list[Document] = []
     warnings: list[str] = []
 
+    ignored_suffixes = (".egg-info", ".dist-info", ".mypy_cache", ".pytest_cache")
+
     for dirpath, dirnames, filenames in os.walk(corpus):
         dirnames[:] = sorted(
-            name for name in dirnames if name not in cfg.skip_dirs and not name.startswith(".git")
+            name
+            for name in dirnames
+            if name not in cfg.skip_dirs
+            and not name.startswith(".git")
+            and not name.endswith(ignored_suffixes)
         )
         for filename in sorted(filenames):
             if not filename.endswith(cfg.suffixes):
