@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "面向真实工程语料的检索：结构感知切分 + 增量索引 + BM25/向量混合 + 重排"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 dependencies = []
 
 [project.optional-dependencies]

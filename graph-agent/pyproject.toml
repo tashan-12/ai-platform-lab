@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "LangGraph 编排：分析 -> 验证 -> 报告 的闭环 Agent"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 dependencies = [
     "langgraph>=0.2",
     "ai-lab-mcp",

@@ -16,6 +16,11 @@ DEFAULT_SKIP_DIRS: tuple[str, ...] = (
     "build",
     ".mypy_cache",
     ".ruff_cache",
+    # 生成物目录：不排除的话，跑一次演示就会把它自己的输出当成语料
+    "outputs",
+    "output",
+    "htmlcov",
+    ".eval-cache",
 )
 VECTOR_DIM = 512
 # 索引文件放在语料目录里时，必须自我排除，否则重建会把上一次的索引也当语料

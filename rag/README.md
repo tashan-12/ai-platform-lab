@@ -76,6 +76,12 @@ python -m ai_lab_rag.cli stats --corpus ..
 | `rerank_pool` | 20 | 进入重排的候选数 |
 | `max_file_bytes` | 512KB | 超大文件跳过 |
 
+## 一句实测结论
+
+在这份语料（13 篇文档 / 97 块）上，**混合检索优于纯 BM25（Recall@3 90% → 95%）**，
+但 **重排没有收益**（Recall@1 反而 -5pp），所以接口保留 `rerank` 开关、默认不启用。
+完整数据见 [docs/eval-report.md](../docs/eval-report.md)。
+
 ## 测试
 
 ```bash

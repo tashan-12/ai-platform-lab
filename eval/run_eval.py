@@ -152,12 +152,28 @@ def render(results: list[dict], dataset: list[dict], meta: dict, failures: list[
         f"但按 MRR 选，最优是 {_code(best_mrr['name'])}（{best_mrr['mrr']:.3f}）。"
     )
     lines.append("")
+    hybrid = next(r for r in results if r["name"] == "hybrid")
+    rerank = next(r for r in results if r["name"] == "hybrid+rerank")
+    d3 = (rerank["recall@3"] - hybrid["recall@3"]) * 100
+    d1 = (rerank["recall@1"] - hybrid["recall@1"]) * 100
+    dmrr = rerank["mrr"] - hybrid["mrr"]
+
     lines.append(
-        "**指标冲突（这条比排名本身更值得看）**：混合+重排把正确答案更多推进了前 3，"
-        "却也让少数原本排第一的结果掉到第二，导致 MRR 反而略低于纯 BM25。"
-        "这说明在当前语料上，重排的收益集中在「召回长尾」，代价是「头部精度」。"
-        "选型取决于用途：RAG 取前 3 段上下文做生成 → 选 hybrid+rerank；只需一条精确答案 → 保持 BM25。"
+        f"**重排到底值不值**：相对「不加重排的混合检索」，Recall@3 变化 {d3:+.1f} 个百分点、"
+        f"Recall@1 变化 {d1:+.1f} 个百分点、MRR 变化 {dmrr:+.3f}。"
     )
+    if d3 > 0 and d1 < 0:
+        lines.append(
+            "结论：收益集中在长尾召回，代价是头部精度——适合「取前几段做上下文」的 RAG 场景，"
+            "不适合「只要一条精确答案」的检索框。"
+        )
+    elif d3 <= 0:
+        lines.append(
+            "结论：在这份语料上，重排没有带来 Recall@3 收益，反而伤了头部精度。"
+            "**当前版本不建议默认开启重排**，保留它作为可切换项即可。"
+        )
+    else:
+        lines.append("结论：重排在三个指标上都没有退化，可以默认开启。")
     lines.append("")
 
     best_by_cat = category_breakdown(best, dataset)
