@@ -49,6 +49,7 @@
 - [ADR-001](docs/adr/0001-tools-via-mcp.md) 工具走 MCP，而不是硬编码 function call
 - [ADR-002](docs/adr/0002-graph-orchestration.md) 用图编排（LangGraph），而不是线性链
 - [ADR-003](docs/adr/0003-sandbox-execution.md) 执行放沙箱，而不是同集群容器
+- [ADR-004](docs/adr/0004-inprocess-vs-mcp.md) 工具通道：进程内调用与 MCP 并存
 
 ## 目录
 
